@@ -13,7 +13,7 @@ const userSchema = new Schema({
     unique: true,
     validate: {
       validator: function (v) {
-   
+
         return /\S+@\S+\.\S+/.test(v);
       },
       message: props => `${props.value} is not a valid email address!`
@@ -40,11 +40,34 @@ const userSchema = new Schema({
     type: Date,
     default: Date.now
   }
-  
+  ,
+  order: [
+    {
+      service: {
+        type: String,
+        required: true
+
+      },
+      price: {
+        type: String,
+        required: true
+      }
+      ,
+      duration: {
+        type: Number,
+        required: true
+      },
+      description: {
+        type: String,
+        required: true
+      }
+    }
+  ]
+
 });
 
 
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
@@ -58,7 +81,7 @@ userSchema.pre('save', async function(next) {
 });
 
 
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   try {
     return await bcrypt.compare(candidatePassword, this.password);
   } catch (err) {

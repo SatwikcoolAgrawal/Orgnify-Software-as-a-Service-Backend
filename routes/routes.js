@@ -6,11 +6,11 @@ const router = express.Router();
 router.post('/register', async (req, res) => {
     console.log(req.body)
     const data = new Model({
-       name:req.body.name,
-       email:req.body.email,
-       password:req.body.password,
-       isAdmin:req.body.isadmin,
-       isSuperAdmin:req.body.issuperadmin,
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+        isAdmin: req.body.isadmin,
+        isSuperAdmin: req.body.issuperadmin,
     })
 
     try {
@@ -22,6 +22,32 @@ router.post('/register', async (req, res) => {
     }
 })
 
+// login in
+router.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        console.log(`email ${email} + password : ${password}`);
+
+        const user = await Model.findOne({ email });
+
+        if (!user) {
+            res.status(400).json({ message: 'invalid username or password' });
+
+        }
+
+        if (Model.comparePassword(password)) {
+
+            res.status(201).json({ message: 'logged In' });
+
+        }
+    }
+    catch (e) {
+        res.status(400).json({ message: e });
+
+
+    }
+
+})
 //Get all Method
 router.get('/getAll', async (req, res) => {
     try {
@@ -32,6 +58,8 @@ router.get('/getAll', async (req, res) => {
         res.status(500).json({ message: error.message })
     }
 })
+
+
 
 //Get by ID Method
 router.get('/getOne/:id', async (req, res) => {

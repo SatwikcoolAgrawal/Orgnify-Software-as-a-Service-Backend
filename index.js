@@ -3,7 +3,7 @@ const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 const mongoString = process.env.DATABASE_URL;
-const User= require('./models/model')
+const User = require('./models/model')
 
 mongoose.connect(mongoString);
 
@@ -25,7 +25,7 @@ const routes = require('./routes/routes');
 
 app.use('/api', routes)
 
-app.get('/',(req,res)=>{
+app.get('/', (req, res) => {
     res.send("Hello World")
 })
 
