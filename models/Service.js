@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+
+
 const Services = new Schema({
-    service: {
+    servicename: {
         type: String,
         required: true
 
@@ -25,7 +27,6 @@ const Services = new Schema({
 
 
 Services.pre('save', async function (next) {
-
 
 
 });

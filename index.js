@@ -3,7 +3,7 @@ const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 const mongoString = process.env.DATABASE_URL;
-const User = require('./models/model')
+const {User} = require('./models')
 mongoose.set("strictQuery", false);
 mongoose.connect(mongoString);
 
