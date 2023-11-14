@@ -21,9 +21,10 @@ const app = express();
 app.use(cors())
 app.use(express.json());
 
-const routes = require('./routes/routes');
+const {userroute,authroute} = require('./routes');
 
-app.use('/api', routes)
+app.use('/',authroute)
+app.use('/api', userroute)
 
 app.get('/', (req, res) => {
     res.send("Hello World")
