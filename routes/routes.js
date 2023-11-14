@@ -1,11 +1,11 @@
 const express = require('express');
-const Model = require('../models/model');
+const {User} = require('../models');
 const router = express.Router();
-
+const bcrypt = require('bcrypt');
 //Post Method
 router.post('/register', async (req, res) => {
-    console.log(req.body)
-    const data = new Model({
+    
+    const data = new User({
         name: req.body.name,
         email: req.body.email,
         password: req.body.password,
@@ -25,33 +25,35 @@ router.post('/register', async (req, res) => {
 // login in
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email,password } = req.body;
         console.log(`email ${email} + password : ${password}`);
 
-        const user = await Model.findOne({ email });
+        const user = await User.findOne({ 'email':email });
 
         if (!user) {
-            res.status(400).json({ message: 'invalid username or password' });
+            res.status(400).json({ message: "no user find" });
 
         }
+        const comp= await bcrypt.compare(password,user.password);
+        if (comp) {
 
-        if (Model.comparePassword(password)) {
-
-            res.status(201).json({ message: 'logged In' });
-
+            res.status(201).json({ message: "logged In" });
         }
+        else {
+            res.status(400).json({ message: "invalid credentials" });
+        }
+
     }
     catch (e) {
-        res.status(400).json({ message: e });
-
+        res.status(400).json({ message: e.message });
 
     }
 
 })
 //Get all Method
-router.get('/getAll', async (req, res) => {
+router.get('/servicesAll', async (req, res) => {
     try {
-        const data = await Model.find();
+        const data = await User.find();
         res.json(data)
     }
     catch (error) {
