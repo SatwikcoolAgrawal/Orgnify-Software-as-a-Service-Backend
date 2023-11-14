@@ -16,14 +16,14 @@ router.get('/userAll', async (req, res) => {
 
 
 
-//Get by ID Method
+//Get by User ID Method
 router.get('/user/:id', async (req, res) => {
     try {
         const data = await User.findById(req.params.id);
 
         if (!data) {
 
-            res.status(500).json({ message: "no such id exist" });
+            res.status(500).json({ message: "no such user exist" });
 
         }
 
@@ -35,7 +35,7 @@ router.get('/user/:id', async (req, res) => {
 })
 
 //Update user
-router.patch('/update/:id', async (req, res) => {
+router.patch('/updateUser/:id', async (req, res) => {
     try {
         const id = req.params.id;
 
@@ -60,14 +60,14 @@ router.patch('/update/:id', async (req, res) => {
 })
 
 //Delete by ID Method
-router.delete('/delete/:id', async (req, res) => {
+router.delete('/deleteUser/:id', async (req, res) => {
     try {
         const id = req.params.id;
-        const data = await Model.findByIdAndDelete(id)
+        const data = await User.findByIdAndDelete(id)
         res.send(`Document with ${data.name} has been deleted..`)
     }
     catch (error) {
-        res.status(400).json({ message: error.message })
+        res.status(500).json({ message: error.message })
     }
 })
 
