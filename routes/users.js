@@ -1,6 +1,7 @@
 const express = require('express');
-const {User} = require('../models');
+const { User } = require('../models');
 const router = express.Router();
+const bcrypt = require('bcrypt');
 
 //Get all Method
 router.get('/userAll', async (req, res) => {
@@ -26,16 +27,18 @@ router.get('/getOne/:id', async (req, res) => {
     }
 })
 
-//Update by ID Method
-router.patch('/update/:email', async (req, res) => {
+//Update user
+router.patch('/update/:id', async (req, res) => {
     try {
-        const email = req.params.email;
-        const updatedData = req.body;
+        const id = req.params.id;
+        const { name, email, password } = req.body;
         const options = { new: true };
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        const result = await Model.findByIdAndUpdate(
-            id, updatedData, options
-        )
+        const result = await User.findByIdAndUpdate(
+            id, { name, email, password: hashedPassword }
+        );
+        console.log(result);
 
         res.send(result)
     }
