@@ -4,4 +4,5 @@ const serviceroute=require("./service")
 const cartroute=require("./cart")
 const paymentroute = require("./payment")
 
-module.exports={authroute,userroute, paymentroute}
+const adminroute = require("./admin")
+module.exports={authroute,userroute, serviceroute, adminroute, paymentroute}
