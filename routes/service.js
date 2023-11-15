@@ -106,10 +106,37 @@ router.patch('/updateService/:id', async (req, res) => {
         const id = req.params.id;
 
 
-        const { productId, serviceName, description, plan, price, duration } = req.body;
+        const { productId, servicename, description, plan, price, priceId, duration } = req.body;
 
-        const result = await User.findByIdAndUpdate(
-            id, { productId, serviceName, description, plan, price, duration }
+        const productUpdate = await stripe.products.update(
+            productId,
+            {
+                name: servicename,
+                description : description,
+            }
+        );
+        
+        if(!productUpdate){
+            return res.status(500).json({message : "Stripe product updation error"})
+        }
+
+        // const priceUpdate = await stripe.prices.update(
+        //     priceId,
+        //     {
+        //         unit_amount: Number(price),
+        //         recurring: {
+        //             interval: 'month',
+        //             interval_count: Number(duration)
+        //         },  
+        //     }
+        // );
+
+        // if(!priceUpdate){
+        //     return res.status(500).json({message : "Stripe price updation error"})
+        // }
+
+        const result = await Service.findByIdAndUpdate(
+            id, { productId, servicename, description, plan, price, priceId, duration }
         );
         console.log(result);
         if (!result) {
