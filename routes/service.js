@@ -1,8 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const { Service } = require('../models');
 const router = express.Router();
 
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 // homepage service list  (distinct)
 
@@ -33,18 +34,38 @@ router.get('/service', async (req, res) => {
 router.post('/addservice', async (req, res) => {
     const { serviceName, plans } = req.body;
 
+    const product = await stripe.products.create({
+        name: req.body.servicename,
+        description: req.body.description
+    });
+
+    if(!product){
+        return res.status(500).json({message : "Stripe product creation error"})
+    }
+
+    const price = await stripe.prices.create({
+        unit_amount: Number(req.body.price),
+        currency: 'usd',
+        recurring: {
+            interval: 'month',
+            interval_count: Number(req.body.duration)
+        },
+        product: product.id,
+    });
+
+    if(!price){
+        return res.status(500).json({message : "Stripe price creation error"})
+    }
+
     const service = new Service({
 
-        productId: req.body.productId,
+        productId: product.id,
         servicename: req.body.servicename,
         description: req.body.description,
         plan: req.body.plan,
         price: req.body.price,
-        priceId: req.body.priceId,
+        priceId: price.id,
         duration: req.body.duration,
-
-
-
 
     });
 
