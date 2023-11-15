@@ -21,11 +21,12 @@ const app = express();
 app.use(cors())
 app.use(express.json());
 
-const { userroute, authroute, serviceroute } = require('./routes');
+const { userroute, authroute, serviceroute, adminroute } = require('./routes');
 
 app.use('/', authroute)
 app.use('/api', userroute);
 app.use('/api', serviceroute);
+app.use('/api', adminroute);
 
 
 app.get('/', (req, res) => {
