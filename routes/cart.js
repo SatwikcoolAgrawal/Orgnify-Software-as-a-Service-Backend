@@ -21,12 +21,12 @@ router.get('/cart',JwtDecoder,async (req,res)=>{
     }
 })
 
-router.post('/additem',async (req,res)=>{
+router.post('/additem/:id',async (req,res)=>{
     let success=false;
     try{
 
         const data=req.user;
-        const prod=req.body.id;
+        const prod=req.params.id;
         const service= await Service.findOne({_id:prod});
         console.log(service);
         const user=await User.findOne({email:data.email});
@@ -54,23 +54,22 @@ router.post('/additem',async (req,res)=>{
     
 })
 
-router.post ('/removeitem/:id',JwtDecoder,async (req,res)=>{
+router.delete('/removeitem/:id',JwtDecoder,async (req,res)=>{
+    let success=false;
     try{
         const data=req.user;
-        const prod=req.body.id;
+        const prod=req.params.id;
         const service= await Service.findOne({_id:prod});
-        console.log(service);
         const user=await User.findOne({email:data.email});
         let cart=await Cart.findOne({user:user});
-        console.log(cart);
-        if (!cart){
-            const new_cart = new Cart({user:user});
-            cart= await new_cart.save();
-        }
         
         let items=cart.items;
-        items.filter(service);
+        items=items.filter(it=>it!=prod);
+        console.log(items);
         cart.items=items;
+        const result=await cart.save();
+        success=true;
+        res.status(201).json({message:"removed service",success})
     }
     catch(error){
         res.status(500).json(error);

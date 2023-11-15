@@ -31,7 +31,7 @@ router.get('/servicesAll', async (req, res) => {
 
 router.get('/cartAll', async (req, res) => {
     try {
-        const data = await Cart.find();
+        const data = await Cart.find().populate('user');
         res.json(data)
     }
     catch (error) {
