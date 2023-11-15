@@ -8,7 +8,7 @@ const cartSchema = new Schema({
         unique:true,
         require:true
     },
-    services:[{
+    items:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Service'
     }]

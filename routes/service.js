@@ -6,8 +6,7 @@ const router = express.Router();
 // getAll Services method
 
 router.get('/servicesAll', async (req, res) => {
-
-
+    
     try {
         const data = await Service.find();
         res.json(data)
@@ -15,8 +14,6 @@ router.get('/servicesAll', async (req, res) => {
     catch (error) {
         res.status(500).json({ message: error.message })
     }
-
-
 
 })
 
