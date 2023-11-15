@@ -1,12 +1,13 @@
+require('dotenv').config({path:'../'});
 const express = require('express');
 const {User} = require('../models');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-
+const jwt = require('jsonwebtoken');
 
 //Register Method
 router.post('/register', async (req, res) => {
-    
+
     const data = new User({
         name: req.body.name,
         email: req.body.email,
@@ -14,18 +15,34 @@ router.post('/register', async (req, res) => {
         isAdmin: req.body.isadmin,
         isSuperAdmin: req.body.issuperadmin,
     })
+    
+    let user= await User.findOne({email:req.body.email});
+    if(user){
+        return res.status(400).json({error:'Account already exist, try logging in!'});
+    }
 
     try {
-        const dataToSave = await data.save();
-        res.status(200).json(dataToSave)
+        const user = await data.save();
+        const payload={
+            email:user.email,
+            name:user.name,
+        }
+        const secret = process.env.SECRET;
+        const jwtToken = jwt.sign(payload,secret);
+        success = true
+
+        res.status(200).json({success, jwtToken})
+
     }
     catch (error) {
-        res.status(400).json({ message: error.message })
+        console.error(error.message);
+        res.status(500).json({ message: error.message })
     }
 })
 
 // Login Method
 router.post('/login', async (req, res) => {
+    let success=false
     try {
         const { email,password } = req.body;
         console.log(`email ${email} + password : ${password}`);
@@ -34,17 +51,22 @@ router.post('/login', async (req, res) => {
 
         if (!user) {
             res.status(400).json({ message: "no user find" });
-
+            return ;
         }
         const comp= await bcrypt.compare(password,user.password);
         if (comp) {
-
-            res.status(201).json({ message: "logged In" });
+            const payload={
+                email:user.email,
+                name:user.name,
+            }
+            const secret = process.env.SECRET;
+            const AccessToken = jwt.sign(payload,secret);
+            success = true
+            res.status(201).json({ message: "logged In",AccessToken,success });
         }
         else {
             res.status(400).json({ message: "invalid credentials" });
         }
-
     }
     catch (e) {
         res.status(400).json({ message: e.message });
