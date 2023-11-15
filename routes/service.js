@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get('/service', async (req, res) => {
     try {
-        const data = await Service.distinct('priceId');
+        const data = await Service.distinct('servicename');
 
         console.log(data);
 
