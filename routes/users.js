@@ -4,6 +4,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 
 //Get all Method
+
 router.get('/userAll', async (req, res) => {
     try {
         const data = await User.find();
