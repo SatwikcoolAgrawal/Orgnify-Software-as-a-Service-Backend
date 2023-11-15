@@ -1,0 +1,21 @@
+API:
+1- update user -Done
+2- getall users-Done 
+3- get specific user - done and tested as well
+4- delete user - done 
+
+4- services of users - cart #get
+5- add service to cart   #post
+6- remove service from cart
+
+7- add new service - done but not working
+8- update service- done but not tested
+9- delete service - done but not tested
+10- get all service- done and tested too
+12- get different plans for a service
+
+13 - checkout using stripe
+
+Model:
+- updatation of service model to accomadate different plans
+ex- 1 service can have 3 diff plans
