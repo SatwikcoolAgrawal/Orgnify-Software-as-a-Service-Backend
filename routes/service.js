@@ -3,17 +3,28 @@ const { Service } = require('../models');
 const router = express.Router();
 
 
-// getAll Services method
 
-router.get('/servicesAll', async (req, res) => {
-    
+// homepage service list  (distinct)
+
+router.get('/service', async (req, res) => {
     try {
-        const data = await Service.find();
-        res.json(data)
+        const data = await Service.distinct('priceId');
+
+        console.log(data);
+
+        if (!data) {
+            res.status(500).json({ message: 'Error in connection in DB' })
+        }
+
+        res.json(data);
+
     }
     catch (error) {
+
         res.status(500).json({ message: error.message })
+
     }
+
 
 })
 
@@ -24,8 +35,15 @@ router.post('/addservice', async (req, res) => {
 
     const service = new Service({
 
-        serviceName: req.body.serviceName,
-        plans: req.body.plans
+        productId: req.body.productId,
+        servicename: req.body.servicename,
+        description: req.body.description,
+        plan: req.body.plan,
+        price: req.body.price,
+        priceId: req.body.priceId,
+        duration: req.body.duration,
+
+
 
 
     });
@@ -52,10 +70,10 @@ router.patch('/updateService/:id', async (req, res) => {
         const id = req.params.id;
 
 
-        const { serviceName, plans } = req.body;
+        const { productId, serviceName, description, plan, price, duration } = req.body;
 
         const result = await User.findByIdAndUpdate(
-            id, { serviceName, plans }
+            id, { productId, serviceName, description, plan, price, duration }
         );
         console.log(result);
         if (!result) {
