@@ -10,12 +10,12 @@ router.post('/create-customer', async(req, res) => {
             email: req.body.email,
             name: req.body.name,
         })
-        console.log(customer)
+        // console.log(customer)
         if(!customer){
             res.status(500).json({message: "Customer not created"})
         }
         else{
-            res.status(200).json({message: "Customer object created"})
+            res.status(200).json(customer.id)
         }
     }
     catch(error){
@@ -42,11 +42,38 @@ router.post('/create-subscriptions', async(req, res)=>{
             subscriptionId: subscription.id,
             clientSecret: subscription.latest_invoice.payment_intent.client_secret,
         });
+
     }
     catch(error){
         return res.status(400).send({error: {message: error.message}});
     }
 })
+
+// router.post('/webhook', bodyParser.raw({type: 'application/json'}), async(req, res) => {
+//     let event;
+
+//     try{
+//         event = stripe.webhooks.constructEvent(
+//             req.body,
+//             req.headers['stripe-signature'],
+//             process.env.STRIPE_WEBHOOK_SECRET
+//         );
+//     } catch(err){
+//         console.log(err);
+//         console.log(`Webhook signature verification failed`);
+//         console.log(`Check the env file`)
+//         return res.sendStatus(400);
+//     }
+
+//     const dataObject = event.data.object;
+// })
+
+    router.post('/cancel-subscription', async(req, res) => {
+        const deletedSubcription = await stripe.subscriptions.cancel(
+            req.body.subscriptionId
+        );
+        res.send(deletedSubcription);
+    })
 
 module.exports = router;
 
