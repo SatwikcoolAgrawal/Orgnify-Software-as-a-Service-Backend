@@ -18,7 +18,7 @@ router.post('/register', async (req, res) => {
     
     let user= await User.findOne({email:req.body.email});
     if(user){
-        return res.status(400).json({error:'Account already exist, try logging in!'});
+        return res.status(400).json({success,error:'Account already exist, try logging in!'});
     }
 
     try {
@@ -50,8 +50,8 @@ router.post('/login', async (req, res) => {
         const user = await User.findOne({ 'email':email });
 
         if (!user) {
-            res.status(400).json({ message: "no user find" });
-            return ;
+            return res.status(400).json({ success,message: "no user find" });
+
         }
         const comp= await bcrypt.compare(password,user.password);
         if (comp) {
@@ -65,11 +65,11 @@ router.post('/login', async (req, res) => {
             res.status(201).json({ message: "logged In",AccessToken,success });
         }
         else {
-            res.status(400).json({ message: "invalid credentials" });
+            res.status(400).json({ success,message: "invalid credentials" });
         }
     }
     catch (e) {
-        res.status(400).json({ message: e.message });
+        res.status(400).json({ success,message: e.message });
 
     }
 

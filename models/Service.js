@@ -20,7 +20,7 @@ const Services = new Schema({
         enum: ["Basic","Standard","Plus"] 
     },
     price: {
-        type: String,
+        type: Number,
         required: true
     },
     priceId:{

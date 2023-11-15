@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, Service } = require('../models');
+const { User, Service, Cart } = require('../models');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 
@@ -26,6 +26,17 @@ router.get('/servicesAll', async (req, res) => {
         res.status(500).json({ message: error.message })
     }
 
+})
+
+
+router.get('/cartAll', async (req, res) => {
+    try {
+        const data = await Cart.find();
+        res.json(data)
+    }
+    catch (error) {
+        res.status(500).json({ message: error.message })
+    }
 })
 
 module.exports = router;
