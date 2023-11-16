@@ -16,7 +16,7 @@ router.get('/services', async (req, res) => {
 
         if (!data) {
             return res.status(500).json({ message: 'Error in connection in DB' })
-            
+
         }
 
         res.json(data);
@@ -30,19 +30,19 @@ router.get('/services', async (req, res) => {
 
 
 // get all plans of a service
-router.get('/plans/:name',async (req,res)=>{
-    let success=false;
-    const name=req.params.name;
-    try{
-        const plans=await Service.find({servicename:name},"servicename plan description price");
+router.get('/plans/:name', async (req, res) => {
+    let success = false;
+    const name = req.params.name;
+    try {
+        const plans = await Service.find({ servicename: name }, "servicename plan description price");
 
-        if (!plans){
-            res.status(400).json({message:"No Service Found"});
+        if (!plans) {
+            res.status(400).json({ message: "No Service Found" });
         }
-        else{
-            res.status(201).json({data:plans});
+        else {
+            res.status(201).json({ data: plans });
         }
-    } catch(error){
+    } catch (error) {
         res.status(500).json(error);
     }
 })
@@ -56,22 +56,34 @@ router.post('/addservice', async (req, res) => {
         description: req.body.description
     });
 
-    if(!product){
-        return res.status(500).json({message : "Stripe product creation error"})
+    if (!product) {
+        return res.status(500).json({ message: "Stripe product creation error" })
     }
 
-    const price = await stripe.prices.create({
-        unit_amount: Number(req.body.price),
-        currency: 'usd',
-        recurring: {
-            interval: 'month',
-            interval_count: Number(req.body.duration)
+    let billingCycle = {
+        "monthly" : {
+            interval : "month",
+            interval_count : 1,
         },
+        "halfyearly" : {
+            interval : "month",
+            interval_count : 6,
+        },
+        "yearly" : {
+            interval : "year",
+        }
+    };
+
+
+    const price = await stripe.prices.create({
+        unit_amount: Number(req.body.price)*100,
+        currency: 'usd',
+        recurring: billingCycle[req.body.duration],
         product: product.id,
     });
 
-    if(!price){
-        return res.status(500).json({message : "Stripe price creation error"})
+    if (!price) {
+        return res.status(500).json({ message: "Stripe price creation error" })
     }
 
     const service = new Service({
@@ -112,12 +124,12 @@ router.patch('/updateService/:id', async (req, res) => {
             productId,
             {
                 name: servicename,
-                description : description,
+                description: description,
             }
         );
-        
-        if(!productUpdate){
-            return res.status(500).json({message : "Stripe product updation error"})
+
+        if (!productUpdate) {
+            return res.status(500).json({ message: "Stripe product updation error" })
         }
 
         // const priceUpdate = await stripe.prices.update(
