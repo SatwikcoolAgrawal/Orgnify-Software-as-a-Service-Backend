@@ -24,19 +24,18 @@ router.get('/cart', JwtDecoder, async (req, res) => {
 
 //api to delete a cart
 
-router.post('/cartEmpty', JwtDecoder, async (req, res) => {
+router.post('/cartempty', JwtDecoder, async (req, res) => {
 
     try {
+        console.log('api')
         const data = req.user;
         const user = await User.findOne({ email: data.email });
-        let cart = await Cart.findOne({ user: user }).populate('items');
-
+        let cart = await Cart.findOne({ user: user });
         cart.items = [];
 
-        const res = await cart.save();
-
-
-        res.status(201).json({ message: "Cart Emptied successfully", success: true })
+        const resp = await cart.save();
+        console.log('leaving ');
+        res.status(201).json({ message: "Cart Emptied successfully", success: true })  
     }
 
     catch (err) {
