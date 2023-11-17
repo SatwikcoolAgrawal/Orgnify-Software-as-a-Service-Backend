@@ -64,20 +64,13 @@ router.post('/addservice', async (req, res) => {
         "monthly" : {
             interval : "month",
             interval_count : 1,
-        },
-        "halfyearly" : {
-            interval : "month",
-            interval_count : 6,
-        },
-        "yearly" : {
-            interval : "year",
         }
     };
 
 
     const price = await stripe.prices.create({
         unit_amount: Number(req.body.price)*100,
-        currency: 'usd',
+        currency: 'inr',
         recurring: billingCycle[req.body.duration],
         product: product.id,
     });
