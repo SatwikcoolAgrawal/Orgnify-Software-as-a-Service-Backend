@@ -42,11 +42,16 @@ router.post('/additem/:id', JwtDecoder, async (req, res) => {
         }
 
         let items = cart.items;
-        items.push(service);
-        cart.items = items;
-        const result = await cart.save();
-        success = true
-        res.status(200).json({ message: "Service Added Successfully", success });
+        if (items.indexOf(prod) === -1) {
+            items.push(service);
+            cart.items = items;
+            const result = await cart.save();
+            success = true
+            res.status(200).json({ message: "Service Added Successfully", success });
+        }
+
+        else return res.status(200).json({ message: 'Service already exist in card', success: false });
+
     }
     catch (error) {
         res.status(400).json({ message: error.message });
