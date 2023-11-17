@@ -49,8 +49,13 @@ router.get('/plans/:name', async (req, res) => {
 
 //  addservice method
 router.post('/addservice', async (req, res) => {
-    const { serviceName, plans } = req.body;
+    const { servicename, plan } = req.body;
 
+    const prods=await Service.find({servicename:servicename,plan:plan});
+    console.log(prods)
+    if (prods.length>0){
+        return res.status(409).json("service already has plan");
+    }
     const product = await stripe.products.create({
         name: req.body.servicename,
         description: req.body.description
@@ -64,20 +69,13 @@ router.post('/addservice', async (req, res) => {
         "monthly" : {
             interval : "month",
             interval_count : 1,
-        },
-        "halfyearly" : {
-            interval : "month",
-            interval_count : 6,
-        },
-        "yearly" : {
-            interval : "year",
         }
     };
 
 
     const price = await stripe.prices.create({
         unit_amount: Number(req.body.price)*100,
-        currency: 'usd',
+        currency: 'inr',
         recurring: billingCycle[req.body.duration],
         product: product.id,
     });

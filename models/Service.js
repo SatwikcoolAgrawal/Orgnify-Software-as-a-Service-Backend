@@ -28,7 +28,7 @@ const Services = new Schema({
     },
     duration: {
         type: String,
-        enum:["monthly","halfyearly","yearly"],
+        enum:["monthly"],
         required: true
     }
 })
