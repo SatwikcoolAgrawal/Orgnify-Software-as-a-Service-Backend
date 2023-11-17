@@ -21,7 +21,7 @@ router.get('/cart',JwtDecoder,async (req,res)=>{
     }
 })
 
-router.post('/additem/:id',async (req,res)=>{
+router.post('/additem/:id',JwtDecoder,async (req,res)=>{
     let success=false;
     try{
 
