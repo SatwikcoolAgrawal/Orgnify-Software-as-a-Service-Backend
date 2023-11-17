@@ -51,6 +51,11 @@ router.get('/plans/:name', async (req, res) => {
 router.post('/addservice', async (req, res) => {
     const { serviceName, plans } = req.body;
 
+    const prods=Service.find({servicename:serviceName,plan:plans});
+
+    if (prods){
+        return res.status(400).json("service already has plan");
+    }
     const product = await stripe.products.create({
         name: req.body.servicename,
         description: req.body.description
