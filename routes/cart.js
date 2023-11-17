@@ -21,6 +21,33 @@ router.get('/cart', JwtDecoder, async (req, res) => {
     }
 })
 
+
+//api to delete a cart
+
+router.post('/cartEmpty', JwtDecoder, async (req, res) => {
+
+    try {
+        const data = req.user;
+        const user = await User.findOne({ email: data.email });
+        let cart = await Cart.findOne({ user: user }).populate('items');
+
+        cart.items = [];
+
+        const res = await cart.save();
+
+
+        res.status(201).json({ message: "Cart Emptied successfully", success: true })
+    }
+
+    catch (err) {
+
+        res.status(400).json({ message: err.message, success: false });
+
+    }
+
+
+})
+
 router.post('/additem/:id', JwtDecoder, async (req, res) => {
     let success = false;
     try {
