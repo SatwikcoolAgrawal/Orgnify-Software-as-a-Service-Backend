@@ -26,13 +26,17 @@ router.post('/create-customer', async (req, res) => {
 router.post('/create-subscriptions', async (req, res) => {
     const customerId = req.body.customerId;
     const priceId = req.body.priceId;
-    // console.log(customerId)
+    console.log(priceId)
+
+    let priceArray = priceId.map(p => { return { price: p } });
+
+
+    console.log(priceArray);
     try {
         const subscription = await stripe.subscriptions.create({
             customer: customerId,
-            items: [{
-                price: priceId,
-            }],
+            items: priceArray
+            ,
             payment_behavior: 'default_incomplete',
             payment_settings: { save_default_payment_method: 'on_subscription' },
             expand: ['latest_invoice.payment_intent'],
