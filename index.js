@@ -4,7 +4,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const mongoString = process.env.DATABASE_URL;
 const { User } = require('./models')
-const {CorsHeader}=require('./middleware');
 mongoose.set("strictQuery", false);
 
 mongoose.connect(mongoString);
