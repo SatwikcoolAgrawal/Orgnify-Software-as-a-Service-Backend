@@ -1,7 +1,7 @@
 const express = require('express');
 const { User, Cart, Service } = require('../models');
 const router = express.Router();
-const JwtDecoder = require('../middleware')
+const {JwtDecoder} = require('../middleware')
 
 router.get('/cart', JwtDecoder, async (req, res) => {
     try {

@@ -4,7 +4,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const mongoString = process.env.DATABASE_URL;
 const { User } = require('./models')
+const {CorsHeader}=require('./middleware');
 mongoose.set("strictQuery", false);
+
 mongoose.connect(mongoString);
 const PORT=process.env.PORT || 3000;
 
@@ -21,7 +23,7 @@ database.once('connected', () => {
 const app = express();
 app.use(cors())
 app.use(express.json());
-
+app.use(CorsHeader)
 const { userroute, authroute, paymentroute, serviceroute, adminroute,cartroute } = require('./routes');
 
 app.use('/', authroute)
