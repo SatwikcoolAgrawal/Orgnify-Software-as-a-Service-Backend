@@ -6,6 +6,7 @@ const mongoString = process.env.DATABASE_URL;
 const { User } = require('./models')
 mongoose.set("strictQuery", false);
 mongoose.connect(mongoString);
+const PORT=process.env.PORT || 3000;
 
 const database = mongoose.connection;
 
@@ -32,9 +33,9 @@ app.use('/api', cartroute);
 app.use('/api/payment', paymentroute)
 
 app.get('/', (req, res) => {
-    res.send("Hello World")
+    res.send("Server started SucessFully")
 })
 
-app.listen(3000, () => {
-    console.log(`Server Started at ${3000}`)
+app.listen(PORT, () => {
+    console.log(`Server Started at ${PORT}`)
 })
