@@ -22,7 +22,6 @@ database.once('connected', () => {
 const app = express();
 app.use(cors())
 app.use(express.json());
-app.use(CorsHeader)
 const { userroute, authroute, paymentroute, serviceroute, adminroute,cartroute } = require('./routes');
 
 app.use('/', authroute)
