@@ -76,7 +76,7 @@ router.post('/addservice', async (req, res) => {
     const price = await stripe.prices.create({
         unit_amount: Number(req.body.price) * 100,
         currency: 'inr',
-        recurring: billingCycle[req.body.duration],
+        recurring: billingCycle["monthly"],
         product: product.id,
     });
 
