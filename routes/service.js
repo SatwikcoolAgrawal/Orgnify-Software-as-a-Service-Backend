@@ -92,7 +92,7 @@ router.post('/addservice', async (req, res) => {
         plan: req.body.plan,
         price: req.body.price,
         priceId: price.id,
-        duration: req.body.duration,
+        duration: "monthly",
     });
 
     try {

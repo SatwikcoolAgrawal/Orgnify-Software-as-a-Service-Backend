@@ -41,12 +41,12 @@ router.patch('/updateUser/:id', async (req, res) => {
         const id = req.params.id;
 
 
-        const { name, email, password } = req.body;
+        const { name, email, password,isAdmin,isSuperAdmin } = req.body;
         const options = { new: true };
         const hashedPassword = await bcrypt.hash(password, 10);
-
+        if (password.length<6) return  res.status(400).json({ message: "password should have min length 6" })
         const result = await User.findByIdAndUpdate(
-            id, { name, email, password: hashedPassword }
+            id, { name:name, email:email, password: hashedPassword ,isAdmin:isAdmin,isSuperAdmin:isSuperAdmin}
         );
         console.log(result);
         if (!result) {
