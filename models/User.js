@@ -50,12 +50,15 @@ userSchema.pre('save', async function (next) {
   try {
     const hashedPassword = await bcrypt.hash(this.password, 10);
     this.password = hashedPassword;
-    this.updatedAt=Date.now;
     return next();
   } catch (err) {
     return next(err);
   }
 });
+
+userSchema.pre('findByIdAndUpdate',function(next){
+  this.updatedAt=Date.now;
+})
 
 const User = mongoose.model('User', userSchema);
 
