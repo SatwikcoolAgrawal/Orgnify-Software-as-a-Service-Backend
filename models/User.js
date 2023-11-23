@@ -58,6 +58,7 @@ userSchema.pre('save', async function (next) {
 
 userSchema.pre('findByIdAndUpdate',function(next){
   this.updatedAt=Date.now;
+  return next();
 })
 
 const User = mongoose.model('User', userSchema);
