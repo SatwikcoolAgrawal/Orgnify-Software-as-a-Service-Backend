@@ -1,11 +1,10 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose=require('mongoose')
+const Schema=mongoose.Schema;
 
-const cartSchema = new Schema({
+const Orders=new Schema({
     user:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        unique:true,
         require:true
     },
     items:[{
@@ -17,8 +16,14 @@ const cartSchema = new Schema({
             type:String,
             enum:["month","year"]
         }
-    }]
-});
+    }],
+    OrderDate:{
+        type:Date,
+        default:Date.now,
+    } 
+})
 
-const Cart = mongoose.model('Cart', cartSchema);
-module.exports = Cart;
+
+const Order=mongoose.model("Order",Orders);
+
+module.exports=Order;

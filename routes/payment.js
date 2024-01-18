@@ -53,6 +53,26 @@ router.post('/create-subscriptions', async (req, res) => {
     }
 })
 
+
+router.post("/create-payment-intent", async (req, res) => {
+    const { total } = req.body;
+  
+    // Create a PaymentIntent with the order amount and currency
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: total,
+      currency: "INR",
+      // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+  
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  });
+  
+
 // router.post('/webhook', bodyParser.raw({type: 'application/json'}), async(req, res) => {
 //     let event;
 

@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt');
+const SALT_WORK_FACTOR=10;
+
 
 const userSchema = new Schema({
   name: {
@@ -24,14 +26,11 @@ const userSchema = new Schema({
     required: true,
     minlength: [6, 'Password must be at least 6 characters']
   },
-  isAdmin: {
-    type: Boolean,
-    default: false
-  },
-  isSuperAdmin: {
-    type: Boolean,
-    default: false
-  },
+  role:{
+    type:String,
+    enum:["normal",'admin','superAdmin'],
+    default:"normal"
+    },
   createdAt: {
     type: Date,
     default: Date.now
@@ -47,9 +46,20 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     return next();
   }
+
   try {
-    const hashedPassword = await bcrypt.hash(this.password, 10);
-    this.password = hashedPassword;
+    bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
+    if (err) return next(err);
+
+    // hash the password using our new salt
+    bcrypt.hash(this.password, salt, function(err, hash) {
+        if (err) return next(err);
+
+        // override the cleartext password with the hashed one
+        this.password = hash;
+        next();
+    });
+});
     return next();
   } catch (err) {
     return next(err);
