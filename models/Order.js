@@ -1,29 +1,32 @@
-const mongoose=require('mongoose')
-const Schema=mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const Orders=new Schema({
-    user:{
+// Define the 'Orders' schema
+const ordersSchema = new Schema({
+    user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        require:true
+        ref: 'User', // Reference the 'User' model
+        required: true,
     },
-    items:[{
+    items: [{
         plan: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Plan'
+            ref: 'Plan',
+            require:true // Reference the 'Plan' model
         },
-        duration:{
-            type:String,
-            enum:["month","year"]
-        }
+        duration: {
+            type: String,
+            enum: ["month", "year"],
+        },
     }],
-    OrderDate:{
-        type:Date,
-        default:Date.now,
-    } 
-})
+    orderDate: {
+        type: Date,
+        default: Date.now,
+    },
+});
 
+// Create the 'Order' model based on the defined schema
+const Order = mongoose.model("Order", ordersSchema);
 
-const Order=mongoose.model("Order",Orders);
-
-module.exports=Order;
+// Export the 'Order' model for use in other modules
+module.exports = Order;

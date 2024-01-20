@@ -22,5 +22,11 @@ const subscriptionSchema = new Schema({
     expiryDate: {
         type: Date,
         required: true
+    },
+    status:{
+        type:String,
+        enum:["active","expired"],
+        required:true,
+        default:"expired"
     }
 });

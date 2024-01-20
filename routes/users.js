@@ -1,75 +1,72 @@
 const express = require('express');
 const { User } = require('../models');
 const router = express.Router();
-const bcrypt = require('bcrypt');
+const { JwtDecoder } = require('../middleware');
 
-//Get all Method
-
-router.get('/userAll', async (req, res) => {
+// Get all users method
+router.get('/users', async (req, res) => {
     try {
-        const data = await User.find();
-        res.json(data)
+        const users = await User.find();
+        res.status(200).json({ users: users });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-})
+});
 
-
-
-//Get by User ID Method
-router.get('/user/:id', async (req, res) => {
+// Get user by ID method
+router.get('/user', JwtDecoder, async (req, res) => {
     try {
-        const data = await User.findById(req.params.id);
+        const user = await User.findById(req.user.id);
 
-        if (!data) {
-
-            res.status(500).json({ message: "no such user exist" });
-
+        if (!user) {
+            res.status(404).json({ message: "User not found" });
         }
 
-        res.json(data);
+        res.status(200).json({ user: user });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-})
+});
 
-//Update user
-router.patch('/updateUser/:id', async (req, res) => {
+// Update user method
+router.post('/update-user', JwtDecoder, async (req, res) => {
     try {
-        const id = req.params.id;
+        const { id } = req.user;
+        const { name, email, password, role } = req.body;
 
+        if (password.length < 6) {
+            return res.status(400).json({ message: "Password should have a minimum length of 6" });
+        }
 
-        const { name, email, password,isAdmin,isSuperAdmin } = req.body;
-        const options = { new: true };
-        const hashedPassword = await bcrypt.hash(password, 10);
-        if (password.length<6) return  res.status(400).json({ message: "password should have min length 6" })
-        const result = await User.findByIdAndUpdate(
-            id, { name:name, email:email, password: hashedPassword ,isAdmin:isAdmin,isSuperAdmin:isSuperAdmin}
+        const updatedUser = await User.findByIdAndUpdate(
+            id, { name: name, email: email, password: password, role: role },
+            { new: true } // Return the updated document
         );
-        console.log(result);
-        if (!result) {
-            res.status(500).json({ message: 'update not done' })
 
+        if (!updatedUser) {
+            res.status(404).json({ message: 'User not found' });
         }
-        res.send(result)
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-})
 
-//Delete by ID Method
-router.delete('/deleteUser/:id', async (req, res) => {
+        res.status(200).json({ user: updatedUser });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Delete user by ID method
+router.delete('/delete-user/:id', async (req, res) => {
     try {
         const id = req.params.id;
-        const data = await User.findByIdAndDelete(id)
-        res.send(`Document with ${data.name} has been deleted..`)
+        const deletedUser = await User.findByIdAndDelete(id);
+
+        if (!deletedUser) {
+            res.status(404).json({ message: 'User not found' });
+        }
+
+        res.send(`User with name ${deletedUser.name} has been deleted.`);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
-    catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-})
+});
 
 module.exports = router;

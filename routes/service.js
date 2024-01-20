@@ -1,177 +1,166 @@
+// Import necessary modules and configure environment variables
 require('dotenv').config();
 const express = require('express');
-const { Service } = require('../models');
-const { raw } = require('body-parser');
+const { Service, Plan } = require('../models');
 const router = express.Router();
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+// Configure Stripe with the secret key from the environment variables
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// homepage service list  (distinct)
-
+// Retrieve a list of distinct services for the homepage
 router.get('/services', async (req, res) => {
     try {
-        const data = await Service.distinct('servicename');
-
-        console.log(data);
-
-        if (!data) {
-            return res.status(500).json({ message: 'Error in connection in DB' })
-
-        }
-
-        res.json(data);
+        // Fetch all services from the database
+        const servicesList = await Service.find();
+        res.status(200).json({ services: servicesList });
+    } catch (error) {
+        res.status(error.status).json({ message: error.message });
     }
-    catch (error) {
-        res.status(500).json({ message: error.message })
+});
 
-    }
-
-})
-
-
-// get all plans of a service
-router.get('/plans/:name', async (req, res) => {
-    let success = false;
-    const name = req.params.name;
+// Retrieve all plans of a specific service
+router.get('/plans/:service', async (req, res) => {
+    const serviceName = req.params.service;
     try {
-        const plans = await Service.find({ servicename: name }, "servicename plan description price");
+        // Find plans associated with the specified service
+        const servicePlans = await Plan.find({ service: serviceName});
 
-        if (!plans) {
-            res.status(400).json({ message: "No Service Found" });
-        }
-        else {
-            res.status(201).json({ data: plans });
+        if (!servicePlans) {
+            res.status(400).json({ message: "No Plans Found" });
+        } else {
+            res.status(200).json({ plans: servicePlans });
         }
     } catch (error) {
-        res.status(500).json(error);
+        res.status(error.status).json({message:error.message});
     }
-})
+});
 
-//  addservice method
-router.post('/addservice', async (req, res) => {
-    const { servicename, plan } = req.body;
+// Create a new service
+router.post('/add-service', async (req, res) => {
+    try {
+        // Extract relevant data from the request body
+        const { name, type, description } = req.body;
 
-    const prods = await Service.find({ servicename: servicename, plan: plan });
-    console.log(prods)
-    if (prods.length > 0) {
-        return res.status(409).json("service already has plan");
-    }
-    const product = await stripe.products.create({
-        name: req.body.servicename,
-        description: req.body.description
-    });
+        // Check if a service with the same name already exists
+        const existingServices = await Service.find({ name: name });
 
-    if (!product) {
-        return res.status(500).json({ message: "Stripe product creation error" })
-    }
-
-    let billingCycle = {
-        "monthly": {
-            interval: "month",
-            interval_count: 1,
+        if (existingServices.length > 0) {
+            return res.status(409).json("Unable to create service, already exists");
         }
-    };
 
+        // Create a new service instance
+        const newService = new Service({
+            name: name,
+            description: description,
+            type: type
+        });
 
-    const price = await stripe.prices.create({
-        unit_amount: Number(req.body.price) * 100,
-        currency: 'inr',
-        recurring: billingCycle["monthly"],
-        product: product.id,
-    });
+        // Save the new service to the database
+        const savedService = await newService.save();
 
-    if (!price) {
-        return res.status(500).json({ message: "Stripe price creation error" })
+        res.status(200).json({message:"service created successfully"});
+    } catch (err) {
+        res.status(err.status).json({ message: err.message });
     }
+});
 
-    const service = new Service({
+router.post('/add-plan',async (req,res)=>{
+    try{
+        const {service,name,price,features}=req.body;
+        const existingPlan=await Plan.find({service:service,name:name});
+        if (existingPlan.length > 0) {
+            return res.status(409).json("Unable to create plan, already exists");
+        }
 
-        productId: product.id,
-        servicename: req.body.servicename,
-        description: req.body.description,
-        plan: req.body.plan,
-        price: req.body.price,
-        priceId: price.id,
-        duration: "monthly",
-    });
+        const newPlan=new Plan({
+            service:service,
+            name:name,
+            price:price,
+            features:features
+        })
 
-    try {
-        const serviceToSave = await service.save();
-
-        res.status(200).json(serviceToSave);
-
+        const savedPlan=await newPlan.save();
+        res.status(200).json({message:"service created successfully"});
     }
-    catch (err) {
-        res.status(500).json({ message: err.message });
-
+    catch(err){
+        res.status(err.status).json({message:err.message})
     }
-
-
 })
 
-// update service
+//  Update an existing plan of a service
+router.post('/update-plan',async (req,res)=>{
+    try{
+        const {service,name,price,features}=req.body;
+        const existingPlan=await Plan.findOneAndUpdate({service:service,name:name},{service:service,name:name,price:price,features:features});
+        if (existingPlan.length == 0) {
+            return res.status(404).json("Plan Not Found");
+        }
 
-router.patch('/updateService/:id', async (req, res) => {
+        const newPlan=new Plan({
+            service:service,
+            name:name,
+            price:price,
+            features:features
+        })
+
+        const savedPlan=await newPlan.save();
+        res.status(200).json({message:"service created successfully"});
+    }
+    catch(err){
+        res.status(err.status).json({message:err.message})
+    }
+})
+
+// Update an existing service by ID
+router.patch('/update-service/:id', async (req, res) => {
     try {
-        const id = req.params.id;
+        const serviceId = req.params.id;
+        const { type, description, name } = req.body;
 
-
-        const { productId, servicename, description, plan, price, priceId, duration } = req.body;
-
-        const productUpdate = await stripe.products.update(
-            productId,
-            {
-                name: servicename,
-                description: description,
-            }
+        // Find and update the service with the provided ID
+        const updatedService = await Service.findByIdAndUpdate(
+            serviceId, { name:name, description:description, type:type }
         );
 
-        if (!productUpdate) {
-            return res.status(500).json({ message: "Stripe product updation error" })
+        if (!updatedService) {
+            return res.status(500).json({ message: 'Update not done' });
         }
-
-        // const priceUpdate = await stripe.prices.update(
-        //     priceId,
-        //     {
-        //         unit_amount: Number(price),
-        //         recurring: {
-        //             interval: 'month',
-        //             interval_count: Number(duration)
-        //         },  
-        //     }
-        // );
-
-        // if(!priceUpdate){
-        //     return res.status(500).json({message : "Stripe price updation error"})
-        // }
-
-        const result = await Service.findByIdAndUpdate(
-            id, { productId, servicename, description, plan, price, priceId, duration }
-        );
-        console.log(result);
-        if (!result) {
-            return res.status(500).json({ message: 'update not done' })
-
-        }
-        res.send(result)
+        res.status(200).json({message:"successfully updated"});
+    } catch (error) {
+        res.status(err.status).json({ message: error.message });
     }
-    catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-})
+});
 
-//delete Service
 
-//Delete by ID Method
-router.delete('/deleteService/:id', async (req, res) => {
+
+// Delete a service by ID
+
+router.delete('/delete-plan/:id', async (req, res) => {
     try {
-        const id = req.params.id;
-        const data = await Service.findByIdAndDelete(id)
-        res.send(`Document with ${data.name} has been deleted..`)
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-})
+        const planId = req.params.id;
 
+        // Find and delete the service with the provided ID
+        const deletedPlan = await Plan.findByIdAndDelete(planId).populate();
+        res.send(`Plan with ${deletedPlan.name}-${deletedPlan.service.name} has been deleted.`);
+    } catch (error) {
+        res.status(err.status).json({ message: error.message });
+    }
+});
+
+
+// Delete a service by ID
+
+router.delete('/delete-service/:id', async (req, res) => {
+    try {
+        const serviceId = req.params.id;
+
+        // Find and delete the service with the provided ID
+        const deletedService = await Service.findByIdAndDelete(serviceId);
+        res.send(`Document with ${deletedService.name} has been deleted.`);
+    } catch (error) {
+        res.status(err.status).json({ message: error.message });
+    }
+});
+
+// Export the router for use in other modules
 module.exports = router;

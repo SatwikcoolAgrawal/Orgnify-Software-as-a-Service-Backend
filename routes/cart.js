@@ -1,7 +1,7 @@
 const express = require('express');
 const { User, Cart, Service } = require('../models');
 const router = express.Router();
-const {JwtDecoder} = require('../middleware')
+const { JwtDecoder } = require('../middleware')
 
 router.get('/cart', JwtDecoder, async (req, res) => {
     try {
@@ -35,7 +35,7 @@ router.post('/cartempty', JwtDecoder, async (req, res) => {
 
         const resp = await cart.save();
         console.log('leaving ');
-        res.status(201).json({ message: "Cart Emptied successfully", success: true })  
+        res.status(201).json({ message: "Cart Emptied successfully", success: true })
     }
 
     catch (err) {
