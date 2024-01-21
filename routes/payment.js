@@ -1,83 +1,56 @@
-require('dotenv').config();
 const express = require("express");
 const router = express.Router();
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// router.post('/create-customer', async (req, res) => {
-//     try {
-//         const customer = await stripe.customers.create({
-//             email: req.body.email,
-//             name: req.body.name,
-//         })
-//         // console.log(customer)
-//         if (!customer) {
-//             res.status(500).json({ message: "Customer not created" })
-//         }
-//         else {
-//             res.status(200).json({ customerId: customer.id })
-//         }
-//     }
-//     catch (error) {
-//         res.status(500).json({ message: error.message })
-//     }
-// })
+/**
+ * Express router for handling payment-related routes.
+ * @typedef {import('express').Router} Router
+ */
 
-// router.post('/create-subscriptions', async (req, res) => {
-//     const customerId = req.body.customerId;
-//     const priceId = req.body.priceId;
-//     console.log(priceId)
+/**
+ * Represents the request body for creating a payment intent.
+ * @typedef {Object} CreatePaymentIntentRequestBody
+ * @property {number} total - The total amount for the payment.
+ */
 
-//     let priceArray = priceId.map(p => { return { price: p } });
+/**
+ * Represents the response body for creating a payment intent.
+ * @typedef {Object} CreatePaymentIntentResponseBody
+ * @property {string} clientSecret - The client secret for the PaymentIntent.
+ */
 
-
-//     console.log(priceArray);
-//     try {
-//         const subscription = await stripe.subscriptions.create({
-//             customer: customerId,
-//             items: priceArray
-//             ,
-//             payment_behavior: 'default_incomplete',
-//             payment_settings: { save_default_payment_method: 'on_subscription' },
-//             expand: ['latest_invoice.payment_intent'],
-//         });
-
-//         res.send({
-//             subscriptionId: subscription.id,
-//             clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-//         });
-
-//     }
-//     catch (error) {
-//         return res.status(400).send({ error: { message: error.message } });
-//     }
-// })
-
-
+/**
+ * Creates a PaymentIntent for the given order amount.
+ * @function
+ * @name POST/create-payment-intent
+ * @param {CreatePaymentIntentRequestBody} req.body - The request body containing the total amount for the payment.
+ * @returns {Promise<CreatePaymentIntentResponseBody>} - The response body containing the client secret for the PaymentIntent.
+ */
 router.post("/create-payment-intent", async (req, res) => {
     const { total } = req.body;
-  
-    // Create a PaymentIntent with the order amount and currency
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: total,
-      currency: "INR",
-      // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
-      automatic_payment_methods: {
-        enabled: true,
-      },
-    });
-  
-    res.send({
-      clientSecret: paymentIntent.client_secret,
-    });
-  });
-  
-// router.post('/cancel-subscription', async (req, res) => {
-//     const deletedSubcription = await stripe.subscriptions.cancel(
-//         req.body.subscriptionId
-//     );
-//     res.send(deletedSubcription);
-// })
 
+    try {
+        // Create a PaymentIntent with the order amount and currency
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: total,
+            currency: "INR",
+            // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+            automatic_payment_methods: {
+                enabled: true,
+            },
+        });
+
+        res.send({
+            clientSecret: paymentIntent.client_secret,
+        });
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+/**
+ * @type {Router}
+ */
 module.exports = router;
-

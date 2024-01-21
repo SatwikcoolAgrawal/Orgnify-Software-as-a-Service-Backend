@@ -1,6 +1,16 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+/**
+ * Represents the schema for an order.
+ * @typedef {Object} OrdersSchema
+ * @property {mongoose.Schema.Types.ObjectId} user - The user who placed the order.
+ * @property {Array} items - An array of items in the order, each containing plan and duration details.
+ * @property {mongoose.Schema.Types.ObjectId} items[].plan - The plan associated with the item.
+ * @property {String} items[].duration - The duration of the plan, either "month" or "year".
+ * @property {Date} orderDate - The date and time when the order was placed.
+ */
+
 // Define the 'Orders' schema
 const ordersSchema = new Schema({
     user: {
@@ -12,7 +22,7 @@ const ordersSchema = new Schema({
         plan: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Plan',
-            require:true // Reference the 'Plan' model
+            required: true, // Reference the 'Plan' model
         },
         duration: {
             type: String,

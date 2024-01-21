@@ -1,7 +1,15 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-// Define the 'Cart' schema
+/**
+ * Represents the schema for a shopping cart.
+ * @typedef {Object} CartSchema
+ * @property {mongoose.Schema.Types.ObjectId} user - The user associated with the cart.
+ * @property {Array} items - An array of items in the cart, each containing plan and duration details.
+ * @property {mongoose.Schema.Types.ObjectId} items[].plan - The plan associated with the item.
+ * @property {String} items[].duration - The duration of the plan, either "month" or "year".
+ */
+
 const cartSchema = new Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,

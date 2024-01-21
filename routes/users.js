@@ -1,9 +1,27 @@
 const express = require('express');
 const { User } = require('../models');
 const router = express.Router();
-const { JwtDecoder } = require('../middleware');
+const JwtDecoder = require('../middleware');
 
-// Get all users method
+/**
+ * Express router for handling user-related routes.
+ * @typedef {import('express').Router} Router
+ */
+
+/**
+ * Represents the response body for the user-related endpoints.
+ * @typedef {Object} UserResponseBody
+ * @property {Array} [users] - The array of users retrieved from the database.
+ * @property {Object} [user] - The user retrieved from the database.
+ * @property {string} [message] - A message providing information about the operation.
+ */
+
+/**
+ * API to get all users.
+ * @function
+ * @name GET/users
+ * @returns {Promise<UserResponseBody>} - The response body containing the array of users.
+ */
 router.get('/users', async (req, res) => {
     try {
         const users = await User.find();
@@ -13,7 +31,13 @@ router.get('/users', async (req, res) => {
     }
 });
 
-// Get user by ID method
+/**
+ * API to get user by ID.
+ * @function
+ * @name GET/user
+ * @middleware {JwtDecoder} - Middleware to decode JWT token.
+ * @returns {Promise<UserResponseBody>} - The response body containing the user information.
+ */
 router.get('/user', JwtDecoder, async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
@@ -28,7 +52,23 @@ router.get('/user', JwtDecoder, async (req, res) => {
     }
 });
 
-// Update user method
+/**
+ * Represents the request body for updating a user.
+ * @typedef {Object} UpdateUserRequestBody
+ * @property {string} name - The updated name of the user.
+ * @property {string} email - The updated email of the user.
+ * @property {string} password - The updated password of the user.
+ * @property {string} role - The updated role of the user.
+ */
+
+/**
+ * API to update a user.
+ * @function
+ * @name POST/update-user
+ * @middleware {JwtDecoder} - Middleware to decode JWT token.
+ * @param {UpdateUserRequestBody} req.body - The request body containing the updated user information.
+ * @returns {Promise<UserResponseBody>} - The response body containing the updated user information.
+ */
 router.post('/update-user', JwtDecoder, async (req, res) => {
     try {
         const { id } = req.user;
@@ -53,7 +93,13 @@ router.post('/update-user', JwtDecoder, async (req, res) => {
     }
 });
 
-// Delete user by ID method
+/**
+ * API to delete a user by ID.
+ * @function
+ * @name DELETE/delete-user/:id
+ * @param {string} req.params.id - The ID of the user to be deleted.
+ * @returns {Promise<UserResponseBody>} - The response body indicating the success or failure of the user deletion.
+ */
 router.delete('/delete-user/:id', async (req, res) => {
     try {
         const id = req.params.id;
@@ -69,4 +115,7 @@ router.delete('/delete-user/:id', async (req, res) => {
     }
 });
 
+/**
+ * @type {Router}
+ */
 module.exports = router;

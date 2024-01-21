@@ -1,11 +1,37 @@
-require('dotenv').config({ path: '../' });
 const express = require('express');
 const { User } = require('../models');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// Register Method
+/**
+ * Express router for handling user authentication-related routes.
+ * @typedef {import('express').Router} Router
+ */
+
+/**
+ * Represents the request body for the user registration endpoint.
+ * @typedef {Object} RegisterRequestBody
+ * @property {string} name - The name of the user.
+ * @property {string} email - The email address of the user.
+ * @property {string} password - The password for the user account.
+ */
+
+/**
+ * Represents the response body for the user registration endpoint.
+ * @typedef {Object} RegisterResponseBody
+ * @property {boolean} success - Indicates if the registration was successful.
+ * @property {string} [accessToken] - JWT token for authentication (if registration is successful).
+ * @property {string} [message] - Additional message providing information about the registration process.
+ */
+
+/**
+ * Handles user registration.
+ * @function
+ * @name POST/register
+ * @param {RegisterRequestBody} req.body - The request body containing user registration data.
+ * @returns {Promise<RegisterResponseBody>} - The response body indicating the success or failure of the registration.
+ */
 router.post('/register', async (req, res) => {
     let success = false;
 
@@ -47,7 +73,28 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Login Method
+/**
+ * Represents the request body for the user login endpoint.
+ * @typedef {Object} LoginRequestBody
+ * @property {string} email - The email address of the user.
+ * @property {string} password - The password for the user account.
+ */
+
+/**
+ * Represents the response body for the user login endpoint.
+ * @typedef {Object} LoginResponseBody
+ * @property {boolean} success - Indicates if the login was successful.
+ * @property {string} [accessToken] - JWT token for authentication (if login is successful).
+ * @property {string} [message] - Additional message providing information about the login process.
+ */
+
+/**
+ * Handles user login.
+ * @function
+ * @name POST/login
+ * @param {LoginRequestBody} req.body - The request body containing user login data.
+ * @returns {Promise<LoginResponseBody>} - The response body indicating the success or failure of the login.
+ */
 router.post('/login', async (req, res) => {
     let success = false;
 
@@ -87,4 +134,7 @@ router.post('/login', async (req, res) => {
     }
 });
 
+/**
+ * @type {Router}
+ */
 module.exports = router;

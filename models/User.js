@@ -3,6 +3,17 @@ const Schema = mongoose.Schema;
 const bcrypt = require('bcrypt');
 const SALT_WORK_FACTOR = 10;
 
+/**
+ * Represents the schema for a user.
+ * @typedef {Object} UserSchema
+ * @property {String} name - The name of the user.
+ * @property {String} email - The email address of the user.
+ * @property {String} password - The hashed password of the user.
+ * @property {String} role - The role of the user (e.g., 'normal', 'admin', 'superAdmin').
+ * @property {Date} createdAt - The date and time when the user was created.
+ * @property {Date} updatedAt - The date and time when the user was last updated.
+ */
+
 // Custom password validator function
 const passwordValidator = function (value) {
     // Password must contain at least one uppercase letter, one lowercase letter, and one digit
@@ -53,7 +64,9 @@ userSchema.pre('save', async function (next) {
         return next();
     }
     try {
-        if (!passwordValidator(this.password)) throw {status: 400 , message: "password does not match required pattern"}; 
+        if (!passwordValidator(this.password)) {
+            throw { status: 400, message: "Password does not match the required pattern" };
+        }
         const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
         const hash = await bcrypt.hash(this.password, salt);
 
@@ -65,13 +78,16 @@ userSchema.pre('save', async function (next) {
     }
 });
 
-userSchema.pre('findByIdAndUpdate',async function(next){
-    this.updatedAt=Date.now();
+// Update the password before updating the user
+userSchema.pre('findByIdAndUpdate', async function (next) {
+    this.updatedAt = Date.now();
     if (!this.isModified('password')) {
         return next();
     }
     try {
-        if (!passwordValidator(this.password)) throw {status: 400 , message: "password does not match required pattern"}; 
+        if (!passwordValidator(this.password)) {
+            throw { status: 400, message: "Password does not match the required pattern" };
+        }
         const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
         const hash = await bcrypt.hash(this.password, salt);
 
@@ -81,9 +97,7 @@ userSchema.pre('findByIdAndUpdate',async function(next){
     } catch (err) {
         return next(err);
     }
-})
-
-
+});
 
 // Create the 'User' model based on the defined schema
 const User = mongoose.model('User', userSchema);

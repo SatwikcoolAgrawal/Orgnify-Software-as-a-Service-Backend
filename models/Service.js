@@ -1,6 +1,13 @@
-// Import necessary modules
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+
+/**
+ * Represents the schema for a service.
+ * @typedef {Object} ServiceSchema
+ * @property {String} name - The name of the service.
+ * @property {String} type - The type of the service (e.g., 'database', 'utility', 'virtual machine').
+ * @property {String} description - The description of the service.
+ */
 
 // Define the 'Service' schema
 const serviceSchema = new Schema({
@@ -20,6 +27,15 @@ const serviceSchema = new Schema({
         required: true,
     },
 });
+
+/**
+ * Represents the schema for a plan associated with a service.
+ * @typedef {Object} PlanSchema
+ * @property {String} service - The name of the service associated with the plan.
+ * @property {String} name - The name of the plan (e.g., 'basic', 'standard', 'pro').
+ * @property {Number} price - The price of the plan.
+ * @property {Array} features - An array of features included in the plan.
+ */
 
 // Define the 'Plan' schema
 const planSchema = new Schema({
