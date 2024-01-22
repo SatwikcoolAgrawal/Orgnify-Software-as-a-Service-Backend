@@ -58,7 +58,7 @@ app.use('/api/payment', paymentRoute);
 
 // Default route returning a success message
 app.get('/', (req, res) => {
-    res.send("Server started successfully");
+    res.send("Welcome to Indian Fashion Fever");
 });
 
 // Start the server and listen on the specified port

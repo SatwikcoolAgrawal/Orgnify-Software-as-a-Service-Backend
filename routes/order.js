@@ -1,41 +1,112 @@
 const express = require('express');
-const { CartItem,Subscription, Order } = require('../models');
+const { CartItem, Subscription, Order } = require('../models');
+const JwtDecoder = require('../middleware');
+const moment = require('moment');
+
+/**
+ * Express Router for handling user-related actions such as placing orders and managing subscriptions.
+ * @type {object}
+ * @const
+ */
 const router = express.Router();
-const JwtDecoder  = require('../middleware');
-const moment=require('moment');
 
-router.post('/order-success',JwtDecoder, async (req,res)=>{
-    let success=false;
-    try {
-        const user=req.user;
-        console.log(user);
-        const cartList= await CartItem.find({user:user.id});
-        await CartItem.deleteMany({user:user.id});
-        console.log('cart :',cartList)
-        const order = new Order({
-            user:user.id,
-            orderDate:moment(),
-        })
-        console.log("order",order);
-        const newOrder= await order.save();
-        console.log("newOrder",newOrder);
-        cartList.forEach(async (obj)=>{
-            let subs= new Subscription({
-                user:user.id,
-                plan:obj.plan,
-                startDate:moment(),
-                expiryDate:moment().add(1,obj.duration),
-                status:"active",
-                order:newOrder
-            })
-            let result=await subs.save();
-        })
-        success=true;
-        res.status(200).json({success,message:"Ordered Successful"});
-    } catch (error) {
-        res.status(500).json({message:error,success});
+/**
+ * Handles the order success endpoint, where users can place orders.
+ * @async
+ * @function
+ * @name postOrderSuccess
+ * @param {object} req - Express request object.
+ * @param {object} res - Express response object.
+ * @returns {Promise<void>}
+ */
+router.post('/order-success', JwtDecoder, async (req, res) => {
+  let success = false;
+  try {
+    const user = req.user;
+
+    // Fetch cart items for the user
+    const cartList = await CartItem.find({ user: user.id });
+    await CartItem.deleteMany({ user: user.id });
+
+    if (cartList.length === 0) return res.status(200).json({ message: "Cart is empty" });
+
+    // Create a new order for the user
+    const order = new Order({
+      user: user.id,
+      orderDate: moment(),
+    });
+
+    const newOrder = await order.save();
+
+    // Create subscriptions for each cart item
+    cartList.forEach(async (obj) => {
+      let subs = new Subscription({
+        user: user.id,
+        plan: obj.plan,
+        startDate: moment(),
+        expiryDate: moment().add(1, obj.duration),
+        status: "active",
+        order: newOrder,
+      });
+
+      await subs.save();
+    });
+
+    success = true;
+    res.status(200).json({ success, message: "Order Successful" });
+  } catch (error) {
+    res.status(500).json({ message: error.message, success });
+  }
+});
+
+/**
+ * Retrieves the user's orders.
+ * @async
+ * @function
+ * @name getOrders
+ * @param {object} req - Express request object.
+ * @param {object} res - Express response object.
+ * @returns {Promise<void>}
+ */
+router.get('/get-orders', JwtDecoder, async (req, res) => {
+  let success = false;
+  try {
+    const user = req.user;
+
+    const userOrders = await Order.find({ user: user.id }).sort({ orderDate: 1 });
+
+    success = true;
+    return res.status(200).json({ success, data: userOrders });
+  } catch (error) {
+    return res.status(500).json({ success, message: error.message });
+  }
+});
+
+/**
+ * Retrieves user subscriptions, optionally filtered by status.
+ * @async
+ * @function
+ * @name getSubscriptions
+ * @param {object} req - Express request object.
+ * @param {object} res - Express response object.
+ * @returns {Promise<void>}
+ */
+router.get('/subscriptions', JwtDecoder, async (req, res) => {
+  try {
+    const user = req.user;
+    const { status } = req.query;
+    let query = { user: user.id };
+
+    if (status) {
+      query.status = status; // If status is provided in the query, filter by status
     }
-})
 
+    const subscriptions = await Subscription.find(query).populate('plan');
+    res.json(subscriptions);
+  } catch (error) {
+    console.error('Error fetching subscriptions:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
-module.exports=router;
+module.exports = router;

@@ -17,19 +17,18 @@ const subscriptionSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
-        index:true,
     },
     plan: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Plan',
         required: true,
-        index:true,
+        
     },
     startDate: {
         type: Date,
         default: Date.now,
         required: true,
-        index:true,
+        
     },
     expiryDate: {
         type: Date,
@@ -48,6 +47,7 @@ const subscriptionSchema = new Schema({
     }
 });
 
+subscriptionSchema.index({user:1,plan:1,startDate:1},{unique:true})
 // Create the 'Subscription' model based on the defined schema
 const Subscription = mongoose.model('Subscription', subscriptionSchema);
 

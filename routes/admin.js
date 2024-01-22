@@ -17,7 +17,6 @@ router.get('/user-all', async (req, res) => {
 // getAll Services method
 
 router.get('/services-all', async (req, res) => {
-
     try {
         const data = await Service.find();
         res.status(200).json({data:data})
