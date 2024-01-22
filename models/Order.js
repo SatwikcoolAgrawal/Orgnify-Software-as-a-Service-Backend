@@ -18,21 +18,10 @@ const ordersSchema = new Schema({
         ref: 'User', // Reference the 'User' model
         required: true,
     },
-    items: [{
-        plan: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Plan',
-            required: true, // Reference the 'Plan' model
-        },
-        duration: {
-            type: String,
-            enum: ["month", "year"],
-        },
-    }],
     orderDate: {
         type: Date,
         default: Date.now,
-    },
+    }
 });
 
 // Create the 'Order' model based on the defined schema

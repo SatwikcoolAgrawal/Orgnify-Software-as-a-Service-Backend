@@ -8,13 +8,14 @@ const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Retrieve a list of distinct services for the homepage
-router.get('/services', async (req, res) => {
+router.get('/service/:name', async (req, res) => {
     try {
+        const service=req.params.name.toLowerCase();
         // Fetch all services from the database
-        const servicesList = await Service.find();
-        res.status(200).json({ services: servicesList });
+        const servicesList = await Service.find({name:service});
+        res.status(200).json({ data: servicesList });
     } catch (error) {
-        res.status(error.status).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -22,8 +23,10 @@ router.get('/services', async (req, res) => {
 router.get('/plans/:service', async (req, res) => {
     const serviceName = req.params.service;
     try {
+        const service=await Service.findOne({name:serviceName})
+       
         // Find plans associated with the specified service
-        const servicePlans = await Plan.find({ service: serviceName});
+        const servicePlans = await Plan.find({ service: service._id}).populate('service');
 
         if (!servicePlans) {
             res.status(400).json({ message: "No Plans Found" });
@@ -31,21 +34,23 @@ router.get('/plans/:service', async (req, res) => {
             res.status(200).json({ plans: servicePlans });
         }
     } catch (error) {
-        res.status(error.status).json({message:error.message});
+        res.status(500).json({message:error.message});
     }
 });
 
 // Create a new service
 router.post('/add-service', async (req, res) => {
+    let success=false
     try {
         // Extract relevant data from the request body
-        const { name, type, description } = req.body;
-
+        let { name, type, description } = req.body;
+        
+        name=name.toLowerCase();
         // Check if a service with the same name already exists
         const existingServices = await Service.find({ name: name });
 
         if (existingServices.length > 0) {
-            return res.status(409).json("Unable to create service, already exists");
+            return res.status(409).json({success,message:"Unable to create service, already exists"});
         }
 
         // Create a new service instance
@@ -57,10 +62,10 @@ router.post('/add-service', async (req, res) => {
 
         // Save the new service to the database
         const savedService = await newService.save();
-
-        res.status(200).json({message:"service created successfully"});
+        success=true
+        res.status(200).json({success,message:"service created successfully"});
     } catch (err) {
-        res.status(err.status).json({ message: err.message });
+        res.status(500).json({ message: err.message });
     }
 });
 
@@ -80,10 +85,10 @@ router.post('/add-plan',async (req,res)=>{
         })
 
         const savedPlan=await newPlan.save();
-        res.status(200).json({message:"service created successfully"});
+        res.status(200).json({message:`plan created successfully`});
     }
     catch(err){
-        res.status(err.status).json({message:err.message})
+        res.status(500).json({message:err.message})
     }
 })
 
@@ -107,7 +112,7 @@ router.post('/update-plan',async (req,res)=>{
         res.status(200).json({message:"service created successfully"});
     }
     catch(err){
-        res.status(err.status).json({message:err.message})
+        res.status(500).json({message:err.message})
     }
 })
 
@@ -127,7 +132,7 @@ router.patch('/update-service/:id', async (req, res) => {
         }
         res.status(200).json({message:"successfully updated"});
     } catch (error) {
-        res.status(err.status).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -143,7 +148,7 @@ router.delete('/delete-plan/:id', async (req, res) => {
         const deletedPlan = await Plan.findByIdAndDelete(planId).populate();
         res.send(`Plan with ${deletedPlan.name}-${deletedPlan.service.name} has been deleted.`);
     } catch (error) {
-        res.status(err.status).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -158,7 +163,7 @@ router.delete('/delete-service/:id', async (req, res) => {
         const deletedService = await Service.findByIdAndDelete(serviceId);
         res.send(`Document with ${deletedService.name} has been deleted.`);
     } catch (error) {
-        res.status(err.status).json({ message: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 

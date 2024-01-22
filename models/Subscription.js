@@ -41,6 +41,11 @@ const subscriptionSchema = new Schema({
         required: true,
         default: "expired",
     },
+    order:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Order",
+        require:true
+    }
 });
 
 // Create the 'Subscription' model based on the defined schema

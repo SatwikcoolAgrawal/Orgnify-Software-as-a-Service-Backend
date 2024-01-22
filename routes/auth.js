@@ -105,7 +105,7 @@ router.post('/login', async (req, res) => {
         const user = await User.findOne({ 'email': email });
 
         if (!user) {
-            return res.status(400).json({ success, message: "No user found" });
+            return res.status(404).json({ success, message: "No user found" });
         }
 
         // Compare the provided password with the hashed password in the database

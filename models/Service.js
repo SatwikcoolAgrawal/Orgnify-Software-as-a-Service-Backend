@@ -41,7 +41,7 @@ const serviceSchema = new Schema({
 const planSchema = new Schema({
     // Reference the 'Service' schema based on the 'name' field
     service: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Service',
         required: true,
     },
@@ -62,7 +62,7 @@ const planSchema = new Schema({
 });
 
 // Create a unique index on the 'service' field
-planSchema.index({ service: 1 }, { unique: true });
+planSchema.index({ service: 1, name: 1 }, { unique: true });
 
 // Create models based on the defined schemas
 const Service = mongoose.model('Service', serviceSchema);

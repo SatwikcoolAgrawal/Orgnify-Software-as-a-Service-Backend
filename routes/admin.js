@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, Service, Cart } = require('../models');
+const { User, Service, CartItem } = require('../models');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 
@@ -29,20 +29,10 @@ router.get('/services-all', async (req, res) => {
 })
 
 
-router.get('/cart-all', async (req, res) => {
-    try {
-        const data = await Cart.find().populate('user');
-        res.status(200).json(data)
-    }
-    catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-})
-
 router.get('/user-cart/:id',async (req,res)=>{
     const id=req.params.id;
     try {
-        const data= await Cart.findOne({user:id}).populate('user').populate('items.plan');
+        const data= await CartItem.find({user:id}).populate('plan');
         res.status(200).json({data:data})
     }
     catch(error){

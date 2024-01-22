@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, Cart, Service, Plan } = require('../models');
+const { User, CartItem, Service, Plan } = require('../models');
 const router = express.Router();
 const JwtDecoder  = require('../middleware');
 
@@ -26,20 +26,14 @@ const JwtDecoder  = require('../middleware');
 router.get('/cart', JwtDecoder, async (req, res) => {
     try {
         const userData = req.user;
-        const user = await User.findOne({ email: userData.email });
+        // const user = await User.findOne({ email: userData.email });
 
-        // Find user's cart, populate items field
-        let cart = await Cart.findOne({ user: user }).populate('items');
+        // Find user's cartItem
+        let cart = await CartItem.find({ user: userData.id }).populate('plan');
         console.log('User Cart:', cart); // Debug statement
 
-        // If user doesn't have a cart, create a new one
-        if (!cart) {
-            const newCart = new Cart({ user: user });
-            cart = await newCart.save();
-        }
-
         // Respond with the cart items
-        res.status(201).json({ data: cart.items });
+        res.status(201).json({ data: cart });
     } catch (error) {
         console.error('Error in /cart:', error); // Debug statement
         res.status(400).json({ message: error.message });
@@ -56,11 +50,8 @@ router.get('/cart', JwtDecoder, async (req, res) => {
 router.post('/cart-empty', JwtDecoder, async (req, res) => {
     try {
         const user = req.user;
-
-        // Update the user's cart to have an empty items array
-        let cart = await Cart.findOneAndUpdate({ user: user.id }, { items: [] });
-        console.log('Emptied Cart:', cart); // Debug statement
-
+        const resp= await CartItem.deleteMany({user:user.id})
+        console.log(resp);
         res.status(201).json({ message: "Cart Emptied successfully", success: true });
     } catch (err) {
         console.error('Error in /cart-empty:', err); // Debug statement
@@ -91,36 +82,29 @@ router.post('/add-item', JwtDecoder, async (req, res) => {
         const planToAdd = await Plan.findById(planId);
 
         // Find user's cart, populate items field
-        let cart = await Cart.findOne({ user: user.id }).populate('items.plan');
+        let cart = await CartItem.find({ user: user.id }).populate('plan');
         console.log('User Cart before adding item:', cart); // Debug statement
 
-        // If user doesn't have a cart, create a new one
-        if (!cart) {
-            const newCart = new Cart({ user: user });
-            cart = await newCart.save();
-        }
-
-        let items = cart.items;
-
+       
         // Check if a plan of this service is already in the cart
-        if (items.some((obj) => obj.plan.service == planToAdd.service)) {
+        if (cart.some((obj) => String(obj.plan._id) == String(planToAdd._id))) {
+            // If the same plan is already in the cart
+            console.log('Service already exists in the cart:', planToAdd); // Debug statement
+            return res.status(200).json({ message: 'Service already exists in the cart', success: false });   
+        } 
+        else if (cart.some((obj) => String(obj.plan.service) === String(planToAdd.service))) {
             console.log('Plan already in the cart:', planToAdd); // Debug statement
             return res.status(409).json({ message: "Plan of This Service already added", success });
-        } else if (items.some((obj) => obj.plan._id != planToAdd._id)) {
-            // Check if a different plan of the same service is already in the cart
-            items.push({
-                plan: planToAdd,
-                duration: duration
-            });
-            cart.items = items;
-            const result = await cart.save();
+        } else {
+            const newItem= new CartItem({
+                user:user.id,
+                plan:planToAdd,
+                duration:duration
+            })
+            const result = await newItem.save();
             success = true;
             console.log('User Cart after adding item:', result); // Debug statement
             res.status(200).json({ message: "Service Added Successfully", success });
-        } else {
-            // If the same plan is already in the cart
-            console.log('Service already exists in the cart:', planToAdd); // Debug statement
-            return res.status(200).json({ message: 'Service already exists in the cart', success: false });
         }
     } catch (error) {
         console.error('Error in /add-item:', error); // Debug statement
@@ -139,21 +123,12 @@ router.post('/add-item', JwtDecoder, async (req, res) => {
 router.delete('/remove-item/:id', JwtDecoder, async (req, res) => {
     let success = false;
     try {
-        const user = req.user;
-        const planId = req.params.id;
-        let cart = await Cart.findOne({ user: user.id });
-
-        let items = cart.items;
-
-        // Filter out the item to be removed
-        items = items.filter((it) => String(it.plan) !== planId);
-
-        // Update the cart with the modified items array
-        cart.items = items;
-        const result = await cart.save();
+        const itemId = req.params.id;
+        // deleteing cartItem of user and requested plan
+        let cart = await CartItem.findByIdAndDelete(itemId);
         success = true;
-        console.log('User Cart after removing item:', result); // Debug statement
-        res.status(201).json({ message: "Removed service", success });
+        console.log('User Cart after removing item:', cart); // Debug statement
+        res.status(201).json({ message: "Removed Item", success });
     } catch (error) {
         console.error('Error in /remove-item:', error); // Debug statement
         res.status(500).json({ message: error.message });

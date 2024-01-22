@@ -7,7 +7,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 
 // Obtain the MongoDB connection string from the environment variables
-const mongoString = process.env.DATABASE_URL;
+const mongoString = process.env.DATABASE_URL2;
 
 // Allow MongoDB to accept queries without strict mode
 mongoose.set("strictQuery", false);
@@ -43,11 +43,12 @@ app.use(cors());
 app.use(express.json());
 
 // Import route modules
-const { userRoute, authRoute, paymentRoute, serviceRoute, adminRoute, cartRoute } = require('./routes');
+const { userRoute, authRoute, paymentRoute, serviceRoute, adminRoute, cartRoute,orderRoute } = require('./routes');
 
 // Define routes for the application
 app.use('/', authRoute);
 app.use('/api', userRoute);
+app.use('/api', orderRoute);
 app.use('/api', serviceRoute);
 app.use('/api', adminRoute);
 app.use('/api', cartRoute);

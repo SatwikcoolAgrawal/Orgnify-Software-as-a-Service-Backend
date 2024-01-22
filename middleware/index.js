@@ -17,7 +17,8 @@ const authorizerMiddleware = (req, res, next) => {
         }
 
         // Extract the token from the Authorization header
-        const token = req.headers.authorization.split(' ')[1];
+        // const token = req.headers.authorization.split(' ')[1];
+        const token = req.headers.authorization;
 
         // Verify and decode the JWT token
         jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
