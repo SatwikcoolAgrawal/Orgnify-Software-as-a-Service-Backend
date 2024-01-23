@@ -39,5 +39,20 @@ const authorizerMiddleware = (req, res, next) => {
     }
 };
 
+const adminMiddleware=(req,res,next)=>{
+    try{
+        if (!req.user) return res.status(400).json({error:"User token Not Found"});
+        
+        if (req.user.role==="normal"){
+            return res.status(403).json({error: "User is Not Admin or SuperAdmin"});
+        }
+
+        next();
+    }
+    catch(error){
+        res.status(500).json({ error: "Internal server error", details: error.message });
+    }
+}
+
 // Export the authorizer middleware for use in other parts of the application
-module.exports = authorizerMiddleware;
+module.exports = {authorizerMiddleware,adminMiddleware};

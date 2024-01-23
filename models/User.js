@@ -79,20 +79,24 @@ userSchema.pre('save', async function (next) {
 });
 
 // Update the password before updating the user
-userSchema.pre('findByIdAndUpdate', async function (next) {
-    this.updatedAt = Date.now();
-    if (!this.isModified('password')) {
+userSchema.pre('findOneAndUpdate', async function (next) {
+    const update = this._update;
+    console.log(update);
+    // If the password is not being modified, no need to hash it
+    if (!update || !update.password) {
         return next();
     }
+
     try {
-        if (!passwordValidator(this.password)) {
+        if (!passwordValidator(update.password)) {
             throw { status: 400, message: "Password does not match the required pattern" };
         }
+
         const salt = await bcrypt.genSalt(SALT_WORK_FACTOR);
-        const hash = await bcrypt.hash(this.password, salt);
+        const hash = await bcrypt.hash(update.password, salt);
 
         // Override the cleartext password with the hashed one
-        this.password = hash;
+        this._update.password = hash;
         next();
     } catch (err) {
         return next(err);

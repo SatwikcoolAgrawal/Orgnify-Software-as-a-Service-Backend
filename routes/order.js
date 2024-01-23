@@ -1,6 +1,6 @@
 const express = require('express');
 const { CartItem, Subscription, Order } = require('../models');
-const JwtDecoder = require('../middleware');
+const {authorizerMiddleware} = require('../middleware');
 const moment = require('moment');
 
 /**
@@ -19,7 +19,7 @@ const router = express.Router();
  * @param {object} res - Express response object.
  * @returns {Promise<void>}
  */
-router.post('/order-success', JwtDecoder, async (req, res) => {
+router.post('/order-success', authorizerMiddleware, async (req, res) => {
   let success = false;
   try {
     const user = req.user;
@@ -69,7 +69,7 @@ router.post('/order-success', JwtDecoder, async (req, res) => {
  * @param {object} res - Express response object.
  * @returns {Promise<void>}
  */
-router.get('/get-orders', JwtDecoder, async (req, res) => {
+router.get('/get-orders', authorizerMiddleware, async (req, res) => {
   let success = false;
   try {
     const user = req.user;
@@ -93,7 +93,7 @@ router.get('/get-orders', JwtDecoder, async (req, res) => {
  * @param {object} res - Express response object.
  * @returns {Promise<void>}
  */
-router.get('/subscriptions', JwtDecoder, async (req, res) => {
+router.get('/subscriptions', authorizerMiddleware, async (req, res) => {
   try {
     const user = req.user;
    

@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
+const {authorizerMiddleware}=require('../middleware')
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 /**
@@ -27,7 +27,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
  * @param {CreatePaymentIntentRequestBody} req.body - The request body containing the total amount for the payment.
  * @returns {Promise<CreatePaymentIntentResponseBody>} - The response body containing the client secret for the PaymentIntent.
  */
-router.post("/create-payment-intent", async (req, res) => {
+router.post("/create-payment-intent",authorizerMiddleware, async (req, res) => {
     const { total } = req.body;
 
     try {

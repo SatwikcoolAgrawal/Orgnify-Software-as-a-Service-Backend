@@ -1,7 +1,7 @@
 const express = require('express');
 const { User, CartItem, Service, Plan } = require('../models');
 const router = express.Router();
-const JwtDecoder  = require('../middleware');
+const {authorizerMiddleware}  = require('../middleware');
 
 /**
  * Express router for handling user cart-related routes.
@@ -20,10 +20,10 @@ const JwtDecoder  = require('../middleware');
  * API to get user's cart.
  * @function
  * @name GET/cart
- * @middleware {JwtDecoder} - Middleware to decode JWT token.
+ * @middleware {authorizerMiddleware} - Middleware to decode JWT token.
  * @returns {Promise<CartResponseBody>} - The response body containing the user's cart items.
  */
-router.get('/cart', JwtDecoder, async (req, res) => {
+router.get('/cart', authorizerMiddleware, async (req, res) => {
     try {
         const userData = req.user;
         // const user = await User.findOne({ email: userData.email });
@@ -44,10 +44,10 @@ router.get('/cart', JwtDecoder, async (req, res) => {
  * API to empty user's cart.
  * @function
  * @name POST/cart-empty
- * @middleware {JwtDecoder} - Middleware to decode JWT token.
+ * @middleware {authorizerMiddleware} - Middleware to decode JWT token.
  * @returns {Promise<CartResponseBody>} - The response body indicating the success or failure of emptying the cart.
  */
-router.post('/cart-empty', JwtDecoder, async (req, res) => {
+router.post('/cart-empty', authorizerMiddleware, async (req, res) => {
     try {
         const user = req.user;
         const resp= await CartItem.deleteMany({user:user.id})
@@ -70,11 +70,11 @@ router.post('/cart-empty', JwtDecoder, async (req, res) => {
  * API to add an item to user's cart.
  * @function
  * @name POST/add-item
- * @middleware {JwtDecoder} - Middleware to decode JWT token.
+ * @middleware {authorizerMiddleware} - Middleware to decode JWT token.
  * @param {AddItemRequestBody} req.body - The request body containing the plan ID and duration to be added to the cart.
  * @returns {Promise<CartResponseBody>} - The response body indicating the success or failure of adding the item to the cart.
  */
-router.post('/add-item', JwtDecoder, async (req, res) => {
+router.post('/add-item', authorizerMiddleware, async (req, res) => {
     let success = false;
     try {
         const { planId, duration } = req.body;
@@ -116,11 +116,11 @@ router.post('/add-item', JwtDecoder, async (req, res) => {
  * API to remove an item from user's cart.
  * @function
  * @name DELETE/remove-item/:id
- * @middleware {JwtDecoder} - Middleware to decode JWT token.
+ * @middleware {authorizerMiddleware} - Middleware to decode JWT token.
  * @param {string} req.params.id - The ID of the plan to be removed from the cart.
  * @returns {Promise<CartResponseBody>} - The response body indicating the success or failure of removing the item from the cart.
  */
-router.delete('/remove-item/:id', JwtDecoder, async (req, res) => {
+router.delete('/remove-item/:id', authorizerMiddleware, async (req, res) => {
     let success = false;
     try {
         const itemId = req.params.id;
