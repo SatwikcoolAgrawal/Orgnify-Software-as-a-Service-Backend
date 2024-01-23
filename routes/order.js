@@ -39,8 +39,9 @@ router.post('/order-success', JwtDecoder, async (req, res) => {
     const newOrder = await order.save();
 
     // Create subscriptions for each cart item
-    cartList.forEach(async (obj) => {
-      let subs = new Subscription({
+    // Use Promise.all to parallelize subscription creation
+    await Promise.all(cartList.map(async (obj) => {
+      const subs = new Subscription({
         user: user.id,
         plan: obj.plan,
         startDate: moment(),
@@ -49,8 +50,8 @@ router.post('/order-success', JwtDecoder, async (req, res) => {
         order: newOrder,
       });
 
-      await subs.save();
-    });
+      return subs.save();
+    }));
 
     success = true;
     res.status(200).json({ success, message: "Order Successful" });
@@ -73,7 +74,7 @@ router.get('/get-orders', JwtDecoder, async (req, res) => {
   try {
     const user = req.user;
 
-    const userOrders = await Order.find({ user: user.id }).sort({ orderDate: 1 });
+    const userOrders = await Order.find({ user: user.id }).sort({ orderDate: -1 });
 
     success = true;
     return res.status(200).json({ success, data: userOrders });
@@ -88,21 +89,24 @@ router.get('/get-orders', JwtDecoder, async (req, res) => {
  * @function
  * @name getSubscriptions
  * @param {object} req - Express request object.
+ * @query {status}["active","expired"] to fetch particular subscriptions  
  * @param {object} res - Express response object.
  * @returns {Promise<void>}
  */
 router.get('/subscriptions', JwtDecoder, async (req, res) => {
   try {
     const user = req.user;
+   
     const { status } = req.query;
     let query = { user: user.id };
 
+     //  /subscriptions?status={value}
     if (status) {
       query.status = status; // If status is provided in the query, filter by status
     }
 
     const subscriptions = await Subscription.find(query).populate('plan');
-    res.json(subscriptions);
+    res.json({data:subscriptions});
   } catch (error) {
     console.error('Error fetching subscriptions:', error);
     res.status(500).json({ error: 'Internal Server Error' });

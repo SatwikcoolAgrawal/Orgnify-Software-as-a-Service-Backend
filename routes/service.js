@@ -4,9 +4,6 @@ const express = require('express');
 const { Service, Plan } = require('../models');
 const router = express.Router();
 
-// Configure Stripe with the secret key from the environment variables
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
 // Retrieve a list of distinct services for the homepage
 router.get('/service/:name', async (req, res) => {
     try {
