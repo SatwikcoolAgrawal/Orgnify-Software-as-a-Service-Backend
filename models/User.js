@@ -55,6 +55,10 @@ const userSchema = new Schema({
         type: Date,
         default: Date.now,
     },
+    isVerified:{
+        type:Boolean,
+        default:false,
+    }
 });
 
 // Hash the password before saving the user
@@ -81,7 +85,6 @@ userSchema.pre('save', async function (next) {
 // Update the password before updating the user
 userSchema.pre('findOneAndUpdate', async function (next) {
     const update = this._update;
-    console.log(update);
     // If the password is not being modified, no need to hash it
     if (!update || !update.password) {
         return next();

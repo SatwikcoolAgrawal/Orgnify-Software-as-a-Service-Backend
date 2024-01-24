@@ -5,7 +5,7 @@ require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
-
+const CronTask=require('./cronjob');
 // Obtain the MongoDB connection string from the environment variables
 const mongoString = process.env.DATABASE_URL2;
 
@@ -65,3 +65,5 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server Started at http://localhost:${PORT}`);
 });
+
+CronTask.start();

@@ -1,8 +1,51 @@
 const express = require('express');
 const { User } = require('../models');
-const router = express.Router();
+const nodemailer=require('nodemailer')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const router = express.Router();
+
+const hostname= process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: true,
+    auth: {
+        user: process.env.MAILER_EMAIL,
+        pass: process.env.MAILER_PASS,
+    },
+});
+
+
+
+async function sendVerificationEmail(userEmail, verificationToken) {
+    try {
+        // Create a verification link using the token
+        const verificationLink = `${hostname}/verify?token=${verificationToken}`;
+
+        // Prepare the email content with a styled button
+        const mailOptions = {
+            from: process.env.MAILER_EMAIL,
+            to: userEmail,
+            subject: 'Verify Your Account',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <p style="font-size: 16px;">Thank you for registering! Please click the button below to verify your account:</p>
+                    <a href="${verificationLink}" style="display: inline-block; padding: 12px 24px; background-color: #3498db; color: #fff; text-decoration: none; border-radius: 5px; font-size: 16px;">Verify Account</a>
+                </div>
+            `,
+        };
+
+        // Send the email
+        const info = await transporter.sendMail(mailOptions);
+
+        console.log(`Verification email sent to ${userEmail}: ${info.messageId}`);
+    } catch (error) {
+        console.error('Error sending verification email:', error);
+    }
+}
 
 /**
  * Express router for handling user authentication-related routes.
@@ -51,21 +94,17 @@ router.post('/register', async (req, res) => {
 
         // Save the user to the database
         const user = await newUser.save();
+        
+        payload={
+            id:user._id,
+            email:user.email
+        }
 
-        // Generate JWT token for authentication
-        const payload = {
-            id: user._id,
-            email: user.email,
-            name: user.name,
-            role: user.role,
-        };
         const secret = process.env.JWT_SECRET;
-        const accessToken = jwt.sign(payload, secret, {
-            expiresIn: '5h',
-        });
-
+        const verificationToken = jwt.sign(payload, secret);
+        await sendVerificationEmail(user.email,verificationToken);
         success = true;
-        res.status(201).json({ success, accessToken });
+        res.status(201).json({ success,message:"User registered successfully, check you e-mail to verify." });
 
     } catch (error) {
         console.error(error.message);
@@ -103,10 +142,11 @@ router.post('/login', async (req, res) => {
 
         // Find the user by email
         const user = await User.findOne({ 'email': email });
-
         if (!user) {
             return res.status(404).json({ success, message: "No user found" });
         }
+
+        if (!user.isVerified) return res.status(401).json({success,message: "User not verified. Please verify your account before logging in."})
 
         // Compare the provided password with the hashed password in the database
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -131,6 +171,26 @@ router.post('/login', async (req, res) => {
         }
     } catch (error) {
         res.status(400).json({ success, message: error.message });
+    }
+});
+
+router.get('/verify', async (req, res) => {
+    try {
+        const verificationToken = req.query.token;
+        const payload=jwt.decode(verificationToken);
+        // Find the user by the verification token
+        const user = await User.findOneAndUpdate({ email:payload.email },{isVerified:true});
+
+        if (!user) {
+            // User not found or already verified
+            return res.status(404).send('Invalid verification link.');
+        }
+
+        // Redirect or send a response as needed
+        res.status(200).send('Account successfully verified. You can now log in.');
+    } catch (error) {
+        console.error('Error during verification:', error);
+        res.status(500).send('Internal Server Error');
     }
 });
 
