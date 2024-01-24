@@ -29,11 +29,23 @@ async function sendVerificationEmail(userEmail, verificationToken) {
         const mailOptions = {
             from: process.env.MAILER_EMAIL,
             to: userEmail,
-            subject: 'Verify Your Account',
+            subject: 'Orignify: Verify Your Account',
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 5px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
+                    <h2 style="color: #3498db;">Orignify</h2>
+                    <p style="font-size:15px;font-weight:bold;"> Hi, ${userEmail}, </p>
                     <p style="font-size: 16px;">Thank you for registering! Please click the button below to verify your account:</p>
-                    <a href="${verificationLink}" style="display: inline-block; padding: 12px 24px; background-color: #3498db; color: #fff; text-decoration: none; border-radius: 5px; font-size: 16px;">Verify Account</a>
+        
+                    <a href="${verificationLink}" style="display: inline-block; padding: 12px 24px; background-color: #27ae60; color: #fff; text-decoration: none; border-radius: 5px; font-size: 16px; text-align: center;">
+                        Verify Your Account
+                    </a>
+        
+                    <div style="margin-top: 20px;">
+                        <p style="margin: 0; font-size: 14px;">In case you are unable to click the button, you can also copy and paste the following link into your browser:</p>
+                        <p style="margin: 5px 0; font-size: 14px; color: #3498db; word-wrap: break-word;">${verificationLink}</p>
+                    </div>
+        
+                    <p style="margin-top: 20px; color: #999; font-size: 12px;">If you did not create an account on Orignify, please ignore this email.</p>
                 </div>
             `,
         };
@@ -102,7 +114,7 @@ router.post('/register', async (req, res) => {
 
         const secret = process.env.JWT_SECRET;
         const verificationToken = jwt.sign(payload, secret);
-        await sendVerificationEmail(user.email,verificationToken);
+        sendVerificationEmail(user.email,verificationToken);
         success = true;
         res.status(201).json({ success,message:"User registered successfully, check you e-mail to verify." });
 
