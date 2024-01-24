@@ -40,7 +40,7 @@ async function updateSubcriptionAndSendMail(subscription) {
 
         // Send email to the user with HTML body
         const mailOptions = {
-            from: 'websitemailer002@gmail.com',
+            from: process.env.MAILER_EMAIL,
             to: subscription.user.email,
             subject: `Orignify: Subscription Expired - ${moment(subscription.expiryDate).format('YYYY-MM-DD')}`,
             html: htmlBody,
