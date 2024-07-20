@@ -1,11 +1,11 @@
 // Load environment variables from .env file
-require('dotenv').config();
+require("dotenv").config();
 
 // Import required libraries
-const cors = require('cors');
-const express = require('express');
-const mongoose = require('mongoose');
-const CronTask=require('./cronjob');
+const cors = require("cors");
+const express = require("express");
+const mongoose = require("mongoose");
+const CronTask = require("./cronjob");
 // Obtain the MongoDB connection string from the environment variables
 const mongoString = process.env.DATABASE_URL2;
 
@@ -14,17 +14,20 @@ mongoose.set("strictQuery", false);
 
 // Connect to the MongoDB database using the provided connection string
 function connectToDatabase() {
-    mongoose.connect(mongoString, { useNewUrlParser: true, useUnifiedTopology: true });
-    
-    const database = mongoose.connection;
+  mongoose.connect(mongoString, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
 
-    database.on('error', (error) => {
-        console.error('MongoDB Connection Error:', error);
-    });
+  const database = mongoose.connection;
 
-    database.once('connected', () => {
-        console.log('Database Connected');
-    });
+  database.on("error", (error) => {
+    console.error("MongoDB Connection Error:", error);
+  });
+
+  database.once("connected", () => {
+    console.log("Database Connected");
+  });
 }
 
 // Invoke the function to connect to the database
@@ -43,27 +46,35 @@ app.use(cors());
 app.use(express.json());
 
 // Import route modules
-const { userRoute, authRoute, paymentRoute, serviceRoute, adminRoute, cartRoute,orderRoute } = require('./routes');
+const {
+  userRoute,
+  authRoute,
+  paymentRoute,
+  serviceRoute,
+  adminRoute,
+  cartRoute,
+  orderRoute,
+} = require("./routes");
 
 // Define routes for the application
-app.use('/', authRoute);
-app.use('/api', userRoute);
-app.use('/api', orderRoute);
-app.use('/api', serviceRoute);
-app.use('/api', adminRoute);
-app.use('/api', cartRoute);
+app.use("/", authRoute);
+app.use("/api", userRoute);
+app.use("/api", orderRoute);
+app.use("/api", serviceRoute);
+app.use("/api", adminRoute);
+app.use("/api", cartRoute);
 
 // Separate route for payment-related endpoints
-app.use('/api/payment', paymentRoute);
+app.use("/api/payment", paymentRoute);
 
 // Default route returning a success message
-app.get('/', (req, res) => {
-    res.send("Welcome to Indian Fashion Fever");
+app.get("/", (req, res) => {
+  res.send("Welcome to Indian Fashion Fever");
 });
 
 // Start the server and listen on the specified port
 app.listen(PORT, () => {
-    console.log(`Server Started at http://localhost:${PORT}`);
+  console.log(`Server Started at http://localhost:${PORT}`);
 });
 
 CronTask.start();

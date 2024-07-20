@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 /**
@@ -13,15 +13,32 @@ const Schema = mongoose.Schema;
 
 // Define the 'Orders' schema
 const ordersSchema = new Schema({
-    user: {
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Reference the 'User' model
+    required: true,
+  },
+  items: [
+    {
+      plan: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User', // Reference the 'User' model
-        required: true,
+        ref: "Plan",
+        required: true, // Reference the 'Plan' model
+      },
+      duration: {
+        type: String,
+        enum: ["month", "year"],
+      },
     },
-    orderDate: {
-        type: Date,
-        default: Date.now,
-    }
+  ],
+  orderDate: {
+    type: Date,
+    default: Date.now,
+  },
+  orderDate: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 // Create the 'Order' model based on the defined schema
